@@ -11,12 +11,25 @@ node server/index.js
 
 零依赖，无需 npm install。端口在 `config.json` 里改。
 
+## 部署到 GitHub Pages（静态版，已上线）
+
+线上演示站：**https://dj7rd6jdjxnkk.github.io/panda-price-compare/**
+
+静态版代码在 `docs/`（`index.html` / `style.css` / `app.js` / `engine.js` / `go.html`）：
+- `engine.js` 把后端的 parser / mock / advisor / adapter 逻辑整体搬到浏览器端，零后端即可比价、画一年趋势、算券后到手价与购买建议。
+- `go.html` 替代后端 `/go/:code` 短链，承担「手机唤起 App / 电脑直跳」的 CPS 中转。
+- 佣金仅在 `engine.js` 内部计算，UI 不渲染，对用户不可见。
+- GitHub Pages 源已设为 `main` 分支 `/docs` 目录。
+
+> 静态版是演示模式（mock 数据）。要做**真实比价 + 真实 CPS 转链**，需要把 `server/` 这套 Node 后端部署到可运行 Node 的服务器/容器，前端改回调用 `/api/analyze`（把 `docs/app.js` 里的 `PandaEngine.analyze` 换回 `fetch('/api/analyze')`），并在 `config.json` 填联盟凭证、`mode` 改 `live`。
+
+
 ## 工作流程
 
 ```
 用户粘贴 链接/淘口令/关键词
    ↓ parser.js 识别平台与商品
-   ↓ adapters 并发查询六平台（价格/优惠券/活动/90天历史）
+   ↓ adapters 并发查询六平台（价格/优惠券/活动/近一年历史）
    ↓ advisor.js 生成购买建议（历史低点判断/券临期提醒/平台服务）
    ↓ cps.js 每个平台都生成 /go/xxx 短链（佣金只在后端记账）
 用户点任意平台「去下单」：
