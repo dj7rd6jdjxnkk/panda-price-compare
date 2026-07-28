@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>正在打开购物 App…</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;background:#f5f6f8;color:#1f2329;gap:16px;padding:20px;text-align:center;margin:0}
+  .sp{width:40px;height:40px;border:3px solid #e5e6eb;border-top-color:#1456f0;border-radius:50%;animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  a{color:#1456f0;text-decoration:none;font-weight:600}
+  .tip{font-size:13px;color:#8a919f;max-width:280px;line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="sp"></div>
+  <div>正在为你打开 <b id="appName">购物</b> App 领取优惠…</div>
+  <div class="tip">如未自动打开，<a id="h5" href="#">点此在浏览器中继续</a></div>
+  <script>
+  (function(){
+    var q = new URLSearchParams(location.search);
+    var scheme = q.get('scheme') || '';
+    var h5 = q.get('url') || '';
+    var nameMap = { taobao:'淘宝', jd:'京东', pdd:'拼多多', douyin:'抖音', kuaishou:'快手', vipshop:'唯品会' };
+    var appName = nameMap[q.get('p')] || '购物';
+    document.getElementById('appName').textContent = appName;
+    document.getElementById('h5').href = h5;
+
+    var ua = navigator.userAgent || '';
+    var isMobile = /Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(ua);
+
+    if (!isMobile) {
+      // 电脑端：直接跳转优惠链接
+      location.replace(h5);
+      return;
+    }
+    if (!scheme) {
+      location.replace(h5);
+      return;
+    }
+    // 手机端：尝试唤起 App，1.8s 未成功则回落 H5
+    var t = Date.now();
+    location.href = scheme;
+    setTimeout(function(){
+      if (Date.now() - t < 2300 && !document.hidden) location.href = h5;
+    }, 1800);
+  })();
+  </script>
+</body>
+</html>
