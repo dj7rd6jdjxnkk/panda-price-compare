@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>熊猫比价 · 淘宝京东拼多多抖音快手唯品会全网比价</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">🐼 熊猫比价</div>
+    <div class="slogan">一条链接，比遍全网，买在最低点</div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- 输入区 -->
+  <section class="search-card">
+    <div class="search-title">粘贴商品链接 / 淘口令 / 商品名称</div>
+    <div class="search-row">
+      <textarea id="inputBox" rows="2" placeholder="例如：https://item.jd.com/100012043978.html&#10;或淘口令：￥AbCd1234EfG￥&#10;或直接输入商品名：无线降噪耳机"></textarea>
+      <button id="goBtn" class="btn-primary">立即比价</button>
+    </div>
+    <div class="quick-tips">
+      <span class="tip-chip" data-demo="https://item.jd.com/100012043978.html">试试京东链接</span>
+      <span class="tip-chip" data-demo="3.0！￥AbCd1234EfG￥ 复制整段打开淘宝">试试淘口令</span>
+      <span class="tip-chip" data-demo="全自动咖啡机">试试关键词</span>
+    </div>
+  </section>
+
+  <!-- 加载中 -->
+  <section id="loading" class="hidden">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div id="loadingText">正在解析商品并查询六大平台…</div>
+    </div>
+  </section>
+
+  <!-- 结果区 -->
+  <section id="result" class="hidden">
+    <!-- 商品主图 + 标题（方便对版确认） -->
+    <div class="product-head">
+      <img id="productImage" class="product-img" alt="商品主图" />
+      <div class="product-head-text">
+        <h2 id="productTitle"></h2>
+        <div class="product-sub">请核对主图与标题，确认是同一款商品后再比价下单 <span id="modeBadge" class="mode-badge hidden">演示数据</span></div>
+      </div>
+    </div>
+
+    <div id="adviceCard" class="advice-card">
+      <div class="advice-head">
+        <span id="adviceIcon"></span>
+        <span id="adviceTitle"></span>
+      </div>
+      <ul id="adviceReasons"></ul>
+    </div>
+
+    <!-- 比价表 -->
+    <div class="section-title">六大平台实时比价 <small>点击「去下单」直达优惠购买页</small></div>
+    <div id="quoteGrid" class="quote-grid"></div>
+
+    <!-- 趋势图 -->
+    <div class="section-title">近一年价格趋势 <small>红涨绿跌 · 点击平台名可切换显示</small></div>
+    <div class="chart-card">
+      <div id="chartLegend" class="chart-legend"></div>
+      <div id="chartWrap"></div>
+      <div id="chartHint" class="chart-hint"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">熊猫比价 · 比价数据仅供参考，实际价格以平台页面为准 · 部分链接经优惠通道跳转</footer>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
