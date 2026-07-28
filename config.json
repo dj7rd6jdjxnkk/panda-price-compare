@@ -1,0 +1,19 @@
+{
+  "port": 3721,
+  "mode": "mock",
+  "_mode说明": "mock=模拟数据演示 | live=真实API（需在下方填入对应平台凭证，并在 server/adapters/index.js 中实现 liveFetch/liveConvert）",
+  "cps": {
+    "taobao":   { "name": "淘宝联盟",  "appKey": "", "appSecret": "", "pid": "mm_0000000_0000000_0000000000", "relationId": "" },
+    "jd":       { "name": "京东联盟",  "appKey": "", "appSecret": "", "unionId": "", "positionId": "" },
+    "pdd":      { "name": "多多进宝",  "clientId": "", "clientSecret": "", "pid": "" },
+    "douyin":   { "name": "抖音精选联盟", "appKey": "", "appSecret": "", "pid": "" },
+    "kuaishou": { "name": "快手分销",  "appKey": "", "appSecret": "", "pid": "" },
+    "vipshop":  { "name": "唯品会联盟", "appKey": "", "appSecret": "", "chanTag": "" }
+  },
+  "aggregator": {
+    "_说明": "可选：使用折淘客/大淘客等聚合平台一个Key转全平台，填了聚合凭证优先走聚合",
+    "provider": "",
+    "appKey": "",
+    "sid": ""
+  }
+}
