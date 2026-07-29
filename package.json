@@ -1,0 +1,14 @@
+{
+  "name": "panda-price-compare",
+  "version": "1.0.0",
+  "description": "熊猫比价 — 全网比价工作台（淘宝/京东/拼多多/抖音/快手/唯品会 比价、历史趋势、券后到手价、CPS 优惠下单）",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}
