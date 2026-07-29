@@ -42,9 +42,8 @@ async function handleAnalyze(req, res, body) {
       const conv = await adapters[p].convertCps(quote, parsed, config);
       // 生成短链（佣金只进后端记账，不下发）
       const code = cps.createShortLink({
-        platform: p, cpsUrl: conv.cpsUrl, appScheme: conv.appScheme, tkl: conv.tkl,
-        productKey: parsed.productKey,
-        commission: quote._commission, commissionRate: quote._commissionRate
+        platform: p, cpsUrl: conv.cpsUrl, appScheme: conv.appScheme,
+        productKey: parsed.productKey
       });
       // 剥离内部字段
       const { _commission, _commissionRate, ...pub } = quote;
@@ -132,6 +131,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(config.port, () => {
-  console.log(`[比价工作台] 已启动: http://localhost:${config.port}  模式: ${config.mode}`);
+// PaaS 平台（Railway/Render/云函数等）通过环境变量 PORT 注入端口，本地回退到 config.port
+const PORT = process.env.PORT || config.port;
+server.listen(PORT, () => {
+  console.log(`[比价工作台] 已启动: http://localhost:${PORT}  模式: ${config.mode}`);
 });
