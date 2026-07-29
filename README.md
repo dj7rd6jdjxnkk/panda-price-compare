@@ -23,6 +23,16 @@ node server/index.js
 
 > 静态版是演示模式（mock 数据）。要做**真实比价 + 真实 CPS 转链**，需要把 `server/` 这套 Node 后端部署到可运行 Node 的服务器/容器，前端改回调用 `/api/analyze`（把 `docs/app.js` 里的 `PandaEngine.analyze` 换回 `fetch('/api/analyze')`），并在 `config.json` 填联盟凭证、`mode` 改 `live`。
 
+## 部署到腾讯云 SCF（Web 函数 · 免费版，跑真后端）
+
+免费额度 **100 万次/月调用**，国内节点、自带腾讯云域名（微信里可直接打开），且 Web 函数由 `scf_bootstrap` 拉起 Node 服务，**零代码改造**。
+
+- 部署包已生成：**`panda-scf.zip`**（约 22KB，含 `server/` `public/` `config.json` `package.json` `scf_bootstrap`）
+- 详细步骤（控制台上传 / 一键脚本 / 真实数据切换）：见 **[README_SCF.md](./README_SCF.md)**
+- 重新打包命令：`PowerShell: Compress-Archive -Path "deploy\*" -DestinationPath panda-scf.zip -Force`
+
+> 为适配云函数「无状态 + 多实例 + 冷启动」，CPS 短链已从「内存记账」改为**无状态编码短链**（HMAC 签名防篡改，见 `server/cps.js`）。代价是不再记录点击/佣金统计——需要报表请在 `resolve` 里接 TencentDB/Redis 上报，并给 `/api/admin/report` 加鉴权。
+
 
 ## 工作流程
 
@@ -55,20 +65,24 @@ node server/index.js
 
 - 前端接口 **绝不下发** 佣金/费率/pid，接口层已剥离 `_commission` 字段
 - `/api/admin/report` 是内部点击与预估佣金报表，**上线前务必加鉴权**
-- 短链 `/go/:code` 记录点击次数，可扩展为订单归因
+- 短链 `/go/:code` 为无状态编码（HMAC 签名），不依赖内存/数据库，云函数冷启动不丢链；点击/佣金统计需接外部存储后另接
 
 ## 目录结构
 
 ```
 server/
-  index.js          HTTP 服务与路由
+  index.js          HTTP 服务与路由（托管 public/ + /api/analyze + /go/:code）
   parser.js         链接/淘口令/关键词解析
   adapters/index.js 六平台适配器（mock ↔ live 切换点）
   mock.js           确定性模拟数据引擎
   advisor.js        购买建议引擎
-  cps.js            CPS 短链与佣金内部记账
-public/             前端（比价卡片/SVG趋势图/建议卡）
+  cps.js            CPS 无状态编码短链（HMAC 签名）
+public/             前端（比价卡片/SVG趋势图/建议卡），调用 /api/analyze
 config.json         端口、模式、联盟凭证
+scf_bootstrap       SCF Web 函数启动脚本
+deploy_scf.js       一键部署脚本（TC3 签名）
+serverless.yml      serverless 配置（可选）
+panda-scf.zip       部署包（控制台上传 / 脚本部署用）
 ```
 
 ## 合规提醒
