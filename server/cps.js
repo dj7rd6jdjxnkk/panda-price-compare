@@ -1,47 +1,38 @@
 /**
- * CPS 短链管理 + 佣金内部记账
+ * CPS 短链管理（无状态，适配云函数/Serverless 多实例 + 冷启动）
  * - 对外只暴露 /go/:code 短链，用户看不到 pid、佣金等敏感信息
- * - 无论用户选择哪个平台，点击都经过 /go 短链 → 记录点击 → 302 到转链后的联盟链接
- * - 佣金数据仅存后端内存/日志（生产可换成数据库）
+ * - code 本身编码了 {平台, 联盟链接, App scheme, 商品key}，并用 HMAC 签名防篡改
+ * - 不依赖内存/数据库，冷启动、多实例都不丢链接
+ * - 如需「点击数/佣金」统计，接外部存储（TencentDB/Redis）后在 resolve 里上报即可
  */
 const crypto = require('crypto');
 
-const store = new Map();   // code → { platform, cpsUrl, tkl, productKey, commission, createdAt, clicks }
+const SECRET = process.env.CPS_SECRET || 'panda-cps-demo-secret';
+const SIG_LEN = 12; // base64url 签名长度
 
-function genCode() {
-  return crypto.randomBytes(4).toString('hex');
-}
-
-function createShortLink({ platform, cpsUrl, appScheme, tkl, productKey, commission, commissionRate }) {
-  const code = genCode();
-  store.set(code, {
-    platform, cpsUrl, appScheme, tkl, productKey,
-    commission, commissionRate,          // 内部记账字段，不下发
-    createdAt: new Date().toISOString(),
-    clicks: 0
-  });
-  return code;
+function createShortLink({ platform, cpsUrl, appScheme, productKey }) {
+  const payload = JSON.stringify({ p: platform, u: cpsUrl, s: appScheme || '', k: productKey || '' });
+  const b64 = Buffer.from(payload, 'utf8').toString('base64url');
+  const sig = crypto.createHmac('sha256', SECRET).update(b64).digest('base64url').slice(0, SIG_LEN);
+  return sig + b64;
 }
 
 function resolve(code) {
-  const rec = store.get(code);
-  if (!rec) return null;
-  rec.clicks++;
-  rec.lastClickAt = new Date().toISOString();
-  return rec;
+  try {
+    const sig = code.slice(0, SIG_LEN);
+    const b64 = code.slice(SIG_LEN);
+    const expect = crypto.createHmac('sha256', SECRET).update(b64).digest('base64url').slice(0, SIG_LEN);
+    if (sig !== expect) return null;
+    const d = JSON.parse(Buffer.from(b64, 'base64url').toString('utf8'));
+    return { platform: d.p, cpsUrl: d.u, appScheme: d.s || null, productKey: d.k };
+  } catch {
+    return null;
+  }
 }
 
-/** 内部报表（仅供运营后台，不暴露给 C 端） */
+/** 统计接口：无状态架构下默认返回空，接外部存储后可在此聚合 */
 function report() {
-  const rows = [];
-  for (const [code, r] of store) {
-    rows.push({
-      code, platform: r.platform, productKey: r.productKey,
-      clicks: r.clicks, estCommission: r.commission, rate: r.commissionRate + '%',
-      createdAt: r.createdAt
-    });
-  }
-  return rows.sort((a, b) => b.clicks - a.clicks);
+  return { note: 'serverless 无状态：点击/佣金统计需接外部存储（TencentDB/Redis），部署后另行接入', rows: [] };
 }
 
 module.exports = { createShortLink, resolve, report };
