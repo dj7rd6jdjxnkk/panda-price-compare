@@ -1,0 +1,30 @@
+# 腾讯云 SCF Web 函数 serverless 配置（可选）
+# 说明：Web 函数（Type: HTTP）由启动文件 scf_bootstrap 拉起 Node 服务，监听 $PORT。
+# 最稳妥的部署方式仍是「控制台上传 panda-scf.zip」或运行 deploy_scf.js；
+# 本文件适用于已安装 serverless 框架 + serverless-tencent-scf 插件的场景。
+
+service: panda-price-compare
+
+frameworkVersion: '2.0'
+
+provider:
+  name: tencent
+  region: ap-guangzhou
+
+functions:
+  panda:
+    name: panda-price-compare
+    runtime: Nodejs18.17
+    memorySize: 128
+    timeout: 30
+    handler: scf_bootstrap
+    type: HTTP            # Web 函数
+    description: 熊猫比价 - 全网比价工作台
+    # 部署包：将 deploy/ 压缩为 panda-scf.zip 后由控制台/脚本上传
+    events:
+      - http:
+          path: /
+          method: ANY
+      - http:
+          path: /{path+}
+          method: ANY
